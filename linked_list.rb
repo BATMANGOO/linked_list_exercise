@@ -1,5 +1,5 @@
 class Node
-  attr_accessor :next_node, :value
+  attr_accessor :value, :next_node
 
   def initialize(value = nil, next_node = nil)
     @value = value
@@ -8,105 +8,135 @@ class Node
 end
 
 class LinkedList
-  attr_accessor :name, :list_size
 
   def initialize
     @head = nil
     @tail = nil
-    @list_size = 0
   end
-  # print bottom of que (append)
-  def append(value) 
-    node_entry = Node.new(value)
-    if @head.nil?
-      @head = node_entry
-    elsif @tail.nil?
-      @tail = node_entry
+
+  def append(val)
+    node = Node.new(val)
+
+    if empty?
+      @head = node
+      @tail = node
     else
-      @tail.next_node = node_entry
+      @tail.next_node = node
+      @tail = node
     end
-    @tail = node_entry
-    @list_size += 1
   end
-  # print top of que (prepend)
-  def prepended(value)
-    node_entry = Node.new(value, @head)
-    @head = node_entry
-    @list_size += 1
+
+  def prepend(val)
+    node = Node.new(val)
+
+    if empty?
+      append(val)
+    else
+      node.next_node = @head
+      @head = node
+    end
   end
 
   def size
-    list_size
-  end
+    return puts 0 if empty?
 
-  def at(index)
-    current_node = @head
-    index.times do
-      current_node = current_node.next_node
-    end
-    current_node
-  end
-
-  def pop
-    return nil if list_size < 1
-
-    current_node = @head
-    current_node = current_node.next_node until current_node.next_node == @tail
-    current_node.next_node = nil
-    @tail = current_node
-  end
-
-  def display_list
-    current_node = @head
-    finished = false
-
-    until finished
-      finished = true if current_node == @tail
-      p current_node.value
-      current_node = current_node.next_node
-    end
-  end
-
-  def find(value)
-    count = 0
-    current_node = @head
-    return true unless current_node.next_node
-
-    until current_node.value == value
-      current_node = current_node.next_node
+    node = @head
+    count = 1
+    until node == @tail
+      node = node.next_node
       count += 1
     end
     count
   end
 
-  def to_s
-    current_node = @head
+  def head
+    puts @head.value
+  end
 
-    until current_node.nil?
-      if current_node == @tail
-        print "( #{current_node.value} )"
-      else
-        print "( #{current_node.value} ) -> "
-      end
-      current_node = current_node.next_node
+  def tail
+    puts @tail.value
+  end
+
+  def each
+    node = @head
+
+    loop do
+      break unless node
+
+      yield node
+      node = node.next_node
     end
   end
 
-  def insert_at(value, index)
-    return false if index > size
+  def at(index)
+    node = @head
+    index.times do
+      node = node.next_node
+    end
+    node
+  end
+
+  def pop
+    return if empty?
+
+    second_last = @head
+    while second_last.next_node.next_node
+      second_last = second_last.next_node
+    end
+    second_last.next_node = nil
+    @head
+  end
+
+  def contains?(val)
+    node = @head
+
+    until node.nil?
+      return true if node.value == val
+
+      node = node.next_node
+    end
+    false
+  end
+
+  def find(val)
+    node = @head
+    shifts = 0
+
+    until node.nil?
+      return shifts if node.value == val
+
+      node = node.next_node
+      shifts += 1
+    end
+    'Not in list'
+  end
+
+  def to_s(node = @head)
+    until node.nil?
+      if node == @tail
+        print "( #{node.value} ) "
+      else
+        print "( #{node.value} ) -> "
+      end
+      node = node.next_node
+    end
+  end
+
+  def insert_at(val, index)
+    return 'index bigger than list' if index > size
 
     if index.zero?
-      ptq(value)
+      prepend(val)
     else
-      node_entry = Node.new(value, at(index))
+      new_node = Node.new(val, at(index))
       prev_node = at(index - 1)
-      prev_node.next_node = node_entry
-      @tail = node_entry if node_entry.next_node.nil?
+      prev_node.next_node = new_node
+      @tail = new_node if new_node.next_node.nil?
     end
   end
 
   def remove_at(index)
-    return false if index > size
+    return 'index bigger than list' if index > size
 
     if index.zero?
       @head = at(1)
@@ -119,22 +149,18 @@ class LinkedList
     end
   end
 
-  def head_node
-    @head.value
-  end
+  private
 
-  def tail_node
-    @tail.value
+  def empty?
+    @head.nil? && @tail.nil?
   end
 end
 
-list = LinkedList.new
+test = LinkedList.new
+test.append(66)
+test.prepend(22)
+test.append(44)
+test.append(55)
 
-list.append(22)
-list.append(33)
-list.append(44)
-list.append(55)
-# puts list.size
-list.remove_at(0)
-
-list.display_list
+puts test.remove_at(1)
+test.each { |node| puts node.value }
